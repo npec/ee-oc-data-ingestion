@@ -1,22 +1,31 @@
-# Level-2 Swath Resampling
+# Level-2 Swath Remapping
 
-The script herein prepare Level-2 OC swath imagery for upload into Earth Engine.
+The script herein preprocess Level-2 OC swath imagery for upload and ingestion into Google Earth Engine (GEE).
+The script can be adapted to any swath imagery other than OC data. 
 
 ## Data: 
-- Sample files downloaded from NASA's [OB.DAAC](https://oceancolor.gsfc.nasa.gov/) and JAXA's [G-Portal](https://gportal.jaxa.jp/gpr/) are included in the `sample_data` folder.
+- Sample files were downloaded from NASA's [OB.DAAC](https://oceancolor.gsfc.nasa.gov/) and JAXA's [G-Portal](https://gportal.jaxa.jp/gpr/).
+- [MODIS/Aqua](https://oceandata.sci.gsfc.nasa.gov/ob/getfile/A2022125035500.L2_LAC_OC.nc)
+- [SGLI/GCOM-C](https://gportal.jaxa.jp/download/standard/GCOM-C/GCOM-C.SGLI/L2.OCEAN.IWPR/3/2022/05/03/GC1SG1_202205030152F05810_L2SG_IWPRQ_3000.h5)
+Obtain the files from the above links and once downloaded save them in `sample_data` folder.
 
 ## User steps:
-See `swathresmaple.ipynb` for details
-1. Obtain the products for your region of interest from the [OB.DAAC](https://oceancolor.gsfc.nasa.gov/) and/or [G-Portal](https://gportal.jaxa.jp/gpr/)
-2. Define in `swathresmaple.ipynb` the input and output path, projection of the target map, and Google Cloud and Earth Engine parameters in case of using command-line tools.
-3. Run the resampling cell. It outputs the result into a GeoTIFF file. Specify the output GeoTIFF file prior to that.
-4. [Optional] - Upload the TIFF file to GCloud, then build the manifest file.
+There 3 Python notebooks included
+1. [SWATH_REMAP_PY-DCT.ipynb](https://github.com/npec/ee-oc-data-ingestion/blob/main/SWATH_REMAP_PY-DCT.ipynb) - does the swath remapping and translation of the GeoTIFF image. It also includes the steps for data ingestion. Further, remapping with JAXA's DCT is also included.
+2. [SWATH_REMAP_MODISA.ipynb](https://github.com/npec/ee-oc-data-ingestion/blob/main/SWATH_REMAP_MODISA.ipynb) - reproduces the figures for MODIS/Aqua remapping.
+3. [SWATH_REMAP_SGLI.ipynb](https://github.com/npec/ee-oc-data-ingestion/blob/main/SWATH_REMAP_SGLI.ipynb) - reproduces
+   the figures for SGLI/GCOM-C remapping.
+
+See the above notebooks for details, briefly:
+1. Obtain the products for your region of interest from the [OB.DAAC](https://oceancolor.gsfc.nasa.gov/), [G-Portal](https://gportal.jaxa.jp/gpr/), or any other data provider. 
+2. Define in [`SWATH_REMAP_PY-DCT.ipynb`](https://github.com/npec/ee-oc-data-ingestion/blob/main/SWATH_REMAP_PY-DCT.ipynb) the input and output parameters including the I/O path, projection of the target area, and the Google Cloud bucket and Earth Engine parameters in case of using command-line tools.
+3. Run the remapping cells and watch the output results in the `result` folder. The DCT remapping step can be commented out.
+4. [Optional] - Upload the GeoTIFF file to GCloud, then build the manifest file.
 5. [Optional] - Use the manifest file to ingest the file.
 
-
-## Resampled level-2 swath in Google Earth Engine
-1. [MODIS/Aqua](https://code.earthengine.google.com/xxxx) 
-2. [SGLI/GCOM-C](https://code.earthengine.google.com/xxxx)
+## Remapped Level-2 swath in Google Earth Engine
+1. [MODIS/Aqua](https://code.earthengine.google.com/9400c3b1c81f184000c76623004d8b3d) 
+2. [SGLI/GCOM-C](https://code.earthengine.google.com/9400c3b1c81f184000c76623004d8b3d)
 
 The code was used in (Maure, Simon, Terauchi, 2022) https://doi.org/10.3390/rsxxxx
 
