@@ -590,7 +590,7 @@ def inpolygon(xq, yq, xv, yv):
     return np.bool_(mask).reshape(xq.shape)
 
 
-def ascending_polygon(xv, yv):
+def ascending_polygon(xv, yv, name):
     # (-1, -1) +-- <= --+ (-1, 0)
     #    /\    |        |   /\
     #    ||    |        |   ||
@@ -604,10 +604,27 @@ def ascending_polygon(xv, yv):
                      yv[:, -1].flatten(),
                      yv[-1, :][::-1],
                      yv[:, 0].flatten()[::-1]))
+
+    # x0, x1 = xv[0, :], xv[:, -1].flatten()
+    # x2, x3 = xv[-1, :][::-1], xv[:, 0].flatten()[::-1]
+    #
+    # px = np.hstack((x0[[0, int(x0.size / 2), x0.size - 1]],
+    #                 x1[[0, int(x1.size / 2), x1.size - 1]],
+    #                 x2[[0, int(x2.size / 2), x2.size - 1]],
+    #                 x3[[0, int(x3.size / 2), x3.size - 1]]))
+    #
+    # y0, y1 = yv[0, :], yv[:, -1].flatten()
+    # y2, y3 = yv[-1, :][::-1], yv[:, 0].flatten()[::-1]
+    # py = np.hstack((y0[[0, int(y0.size / 2), y0.size - 1]],
+    #                 y1[[0, int(y1.size / 2), y1.size - 1]],
+    #                 y2[[0, int(y2.size / 2), y2.size - 1]],
+    #                 y3[[0, int(y3.size / 2), y3.size - 1]]))
+    # print(name, px, py)
+    # save_shape(px, py, name)
     return plx, ply
 
 
-def descending_polygon(xv, yv):
+def descending_polygon(xv, yv, name):
     # (0, 0)  +-- => --+ (0, -1)
     #   ||    |        |   ||
     #   \/    |        |   \/
@@ -621,6 +638,22 @@ def descending_polygon(xv, yv):
                      yv[0, :],
                      yv[:, -1].flatten(),
                      yv[-1, :][::-1]))
+
+    # x0, x1 = xv[:, 0].flatten()[::-1], xv[0, :],
+    # x2, x3 = xv[:, -1].flatten(), xv[-1, :][::-1]
+    #
+    # px = np.hstack((x0[[0, int(x0.size / 2), x0.size - 1]],
+    #                 x1[[0, int(x1.size / 2), x1.size - 1]],
+    #                 x2[[0, int(x2.size / 2), x2.size - 1]],
+    #                 x3[[0, int(x3.size / 2), x3.size - 1]]))
+    #
+    # y0, y1 = yv[:, 0].flatten()[::-1], yv[0, :]
+    # y2, y3 = yv[:, -1].flatten(), yv[-1, :][::-1]
+    # py = np.hstack((y0[[0, int(y0.size / 2), y0.size - 1]],
+    #                 y1[[0, int(y1.size / 2), y1.size - 1]],
+    #                 y2[[0, int(y2.size / 2), y2.size - 1]],
+    #                 y3[[0, int(y3.size / 2), y3.size - 1]]))
+    # save_shape(px, py, name)
     return plx, ply
 
 

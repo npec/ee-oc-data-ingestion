@@ -5,9 +5,9 @@ from pathlib import Path
 
 import h5py
 import numpy as np
-import pyproj
 from netCDF4 import Dataset
 from osgeo import osr, gdal
+from pyproj import Transformer, Geod
 from pyresample import SwathDefinition, create_area_def
 from pyresample.kd_tree import resample_nearest
 
@@ -360,26 +360,39 @@ class SwathResample(L2File):
         # --------------
         lon_0, lat_0 = self.get_swath_centre()
         bbox = self.get_bounds()
-        lower_left_x, upper_right_x = bbox[0], bbox[2]
-        lower_left_y, upper_right_y = bbox[1], bbox[3]
-
+        left, right = bbox[0], bbox[2]
+        bottom, top = bbox[1], bbox[3]
+        print(f'Bounds: {bbox}')
+        # area_extent = left, bottom, right, top
+        """
+        Transform boundary densifying the edges to account for nonlinear 
+        transformations along these edges and extracting the outermost bounds.
+        https://pyproj4.github.io/pyproj/stable/api/transformer.html
+        """
         # -----------
         # pyproj proj
         # -----------
         # Avoid resolution becoming smaller than original
+        lonlat = self.srs in ('lonlat', 'latlon', 'latlong', 'longlat')
         resolution = self.spatial_resolution()
         proj_def = dict(datum=self.datum, lat_0=lat_0, lon_0=lon_0, proj=self.srs)
-
-        if not (self.srs in ('lonlat', 'longlat')):
+        if not lonlat:
             resolution += 1
-            proj = pyproj.Proj(proj_def)
-            (lower_left_x, lower_left_y) = proj.transform(lower_left_x, lower_left_y)
-            (upper_right_x, upper_right_y) = proj.transform(upper_right_x, upper_right_y)
-            # -----------
-            # area extent
-            # -----------
-            area_extent = (lower_left_x, lower_left_y,
-                           upper_right_x, upper_right_y)
+        transproj = Transformer.from_crs(
+            "EPSG:4326",
+            proj_def,
+            always_xy=True
+        )
+        # -----------
+        # area extent
+        # -----------
+        area_extent = transproj.transform_bounds(
+            left, bottom, right, top
+        )
+        print(f'Extent: {area_extent}')
+        print(f'Proj: {proj_def}\nAreaID: {self.area_id}\n'
+              f'ResolutionUsed: {resolution}')
+        if not lonlat:
             # ---------------
             # area definition
             # ---------------
@@ -388,17 +401,13 @@ class SwathResample(L2File):
                                    resolution=resolution,
                                    area_id=self.area_id)
 
-        g = pyproj.Geod(ellps=self.datum)
+        # need shape if lon/lat proj is used, otherwise create_area_dim fails with metric resolution
+        g = Geod(ellps=self.datum)
         dy = (resolution * 360.) / (2. * np.pi * g.b)
         dx = (resolution * 360.) / (2. * np.pi * g.a * np.cos(np.deg2rad(lat_0)))
-        shape = (np.arange(upper_right_y, lower_left_y, -dy).size,
-                 np.arange(lower_left_x, upper_right_x, dx).size)
+        shape = (np.arange(area_extent[3] - dy / 2, area_extent[1], -dy).size,
+                 np.arange(area_extent[0] + dx / 2, area_extent[2], dx).size)
 
-        # -----------
-        # area extent
-        # -----------
-        area_extent = (lower_left_x, lower_left_y,
-                       upper_right_x, upper_right_y)
         # ---------------
         # area definition
         # ---------------
